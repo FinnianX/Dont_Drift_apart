@@ -4,6 +4,8 @@
 #include <format>
 #include <cmath>
 #include <ctime>
+#define RAYGUI_IMPLEMENTATION
+#include "raygui.h"
 using namespace std;
 const int screenWidth = 1920;
 const int screenHeight = 1080;
@@ -40,6 +42,10 @@ int main()
 	bool paused = false;
 	bool gameover = false;
 	bool stopped = false;
+	bool btnUpgradeRadius = false;
+	bool btnUpgradePointRate = false;
+	float upgradeCost = 5;
+	float pointRate = 0.1;
 	while (!WindowShouldClose())
 	{
 		if (showIntro) {
@@ -74,7 +80,18 @@ int main()
 		};
 		if (!paused && !gameover) {
 			BeginDrawing();
-			elapsedTime += GetFrameTime();
+			btnUpgradeRadius = GuiButton(Rectangle{ screenWidth/100, screenHeight/25, 158, 40 }, std::format("UPGRADE: CIRCLE RADIUS\nPoints: {}", upgradeCost).c_str());
+			btnUpgradePointRate = GuiButton(Rectangle{ screenWidth / 100, screenHeight / 10, 158, 40 }, std::format("UPGRADE: POINT RATE\nPoints: {}", upgradeCost).c_str());
+			if (btnUpgradeRadius && points >= upgradeCost) {
+				bullet.radius += 2;
+				points = points - upgradeCost;
+				upgradeCost = upgradeCost + 5;
+			};
+			if (btnUpgradePointRate && points >= upgradeCost) {
+				pointRate += 0.1;
+				points = points - upgradeCost;
+				upgradeCost = upgradeCost + 5;
+			};
 			if (bullet.x <= screenWidth/2) {
 				bullet.velocity -= 0.05;
 			};
@@ -124,7 +141,7 @@ int main()
 				ball.y = ball.radius;
 				ball.velocity = 0.0f;
 			}
-			if (overlap(ball.x, ball.y, ball.radius, bullet.x, bullet.y, bullet.radius)) { points += 0.1; };
+			if (overlap(ball.x, ball.y, ball.radius, bullet.x, bullet.y, bullet.radius)) { points += pointRate; };
 			ClearBackground(RAYWHITE);
 			DrawText(TextFormat("Points: %.1f", points), 10, 10, 20, GRAY);
 			DrawCircleV(Vector2{ ball.x, ball.y }, ball.radius, ball.color);
